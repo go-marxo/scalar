@@ -17,5 +17,10 @@ export const shouldDisplayDescription = (schema: SchemaObject | undefined, propD
     return null
   }
 
+  // If both propDescription and schema.description exist, show both
+  if (propDescription && schema.description) {
+    return `${propDescription}\n\n${schema.description}`
+  }
+
   return propDescription || schema.description || null
 }
