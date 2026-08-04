@@ -214,6 +214,14 @@ const mergeExamples = (baseValue: unknown, newValue: unknown): unknown => {
   return newValue
 }
 
+const getExampleFromEnum = (values: unknown[]): unknown => {
+  if (values.length === 0) {
+    return ''
+  }
+  const specifiedValue = values.find((value) => typeof value === 'string' && !value.includes('_UNSPECIFIED'))
+  return specifiedValue ?? values[0]
+}
+
 type CompositionKeyword = 'anyOf' | 'oneOf'
 
 const getCompositionSelectionKey = (schemaPath: string[], composition: CompositionKeyword): string =>
@@ -637,7 +645,7 @@ export const getExampleFromSchema = (
   }
   if (Array.isArray(_schema.enum) && _schema.enum.length > 0) {
     seen.delete(targetValue)
-    return cache(_schema, _schema.enum[0], cacheKey)
+    return cache(_schema, getExampleFromEnum(_schema.enum), cacheKey)
   }
 
   // Handle object types - check for properties to identify objects

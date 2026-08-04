@@ -9,6 +9,7 @@ import { getResolvedRef } from '@scalar/workspace-store/helpers/get-resolved-ref
 import type {
   ExampleObject,
   MediaTypeObject,
+  SchemaObject,
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 import { computed } from 'vue'
 
@@ -24,7 +25,11 @@ const getContent = () => {
   }
 
   if (response?.schema) {
-    return getExampleFromSchema(getResolvedRef(response.schema), {
+    const schema = getResolvedRefDeep(
+      getResolvedRef(response.schema),
+    ) as SchemaObject
+
+    return getExampleFromSchema(schema, {
       emptyString: 'string',
       mode: 'read',
     })

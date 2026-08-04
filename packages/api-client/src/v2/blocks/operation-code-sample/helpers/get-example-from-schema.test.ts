@@ -35,6 +35,20 @@ describe('getExampleFromSchema', () => {
     ).toBe('available')
   })
 
+  it('takes the first enum example that does not include _UNSPECIFIED', () => {
+    expect(
+      getExampleFromSchema(
+        coerceValue(SchemaObjectSchema, {
+          enum: [
+            'FOLLOW_UP_ACCOUNT_TYPE_ENUM_UNSPECIFIED',
+            'FOLLOW_UP_ACCOUNT_TYPE_ENUM_BACK_TO_POOL',
+            'FOLLOW_UP_ACCOUNT_TYPE_ENUM_FOLLOW_UP',
+          ],
+        }),
+      ),
+    ).toBe('FOLLOW_UP_ACCOUNT_TYPE_ENUM_BACK_TO_POOL')
+  })
+
   it('uses empty quotes as a fallback for strings', () => {
     expect(
       getExampleFromSchema(
@@ -1846,6 +1860,46 @@ describe('getExampleFromSchema', () => {
         'foobar': [['foobar']],
       },
     ])
+  })
+  it('takes the first specified enum from nested allOf refs', () => {
+    expect(
+      getExampleFromSchema(
+        coerceValue(SchemaObjectSchema, {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              items: {
+                '$ref': '#/components/schemas/Item',
+                '$ref-value': {
+                  type: 'object',
+                  properties: {
+                    state: {
+                      allOf: [
+                        {
+                          '$ref': '#/components/schemas/StatusEnum',
+                          '$ref-value': {
+                            enum: ['STATUS_ENUM_UNSPECIFIED', 'STATUS_ENUM_ACTIVE'],
+                            format: 'string',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        { emptyString: 'string' },
+      ),
+    ).toStrictEqual({
+      items: [
+        {
+          state: 'STATUS_ENUM_ACTIVE',
+        },
+      ],
+    })
   })
 
   describe('caching', () => {
